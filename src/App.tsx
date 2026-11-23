@@ -1,12 +1,14 @@
 import { Card, CardContent } from "./components/ui/card";
 import { socialLinks } from "./data/socialLinks";
-import { recentLinks } from "./data/recentLinks";
+import Typewriter from "./components/Typewriter";
+import ParticleBackground from "./components/ParticleBackground";
 import profileImage from "./assets/f-3-bandcamp.jpg";
 
 export default function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
-      <Card className="w-full max-w-md rounded-3xl border-zinc-800 bg-zinc-950 shadow-2xl">
+    <main className="relative flex min-h-screen items-center justify-center bg-black px-6 text-white">
+      <ParticleBackground />
+      <Card className="relative w-full max-w-md rounded-3xl border-zinc-800 bg-zinc-950/40 shadow-2xl backdrop-blur-md">
         <CardContent className="flex flex-col items-center p-6 sm:p-10">
           <img
             src={profileImage}
@@ -14,7 +16,7 @@ export default function App() {
             className="h-40 w-40 rounded-full border-4 border-zinc-800 object-cover shadow-xl"
           />
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-white [font-family:'Inter']">
-            djÐ3ø
+            <Typewriter text="djÐ3ø" />
           </h1>
           <p className="mt-2 text-sm font-medium tracking-[0.2em] text-zinc-400 [font-family:'Inter']">
             @djd3o
