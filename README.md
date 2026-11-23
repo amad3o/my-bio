@@ -1,11 +1,10 @@
 # my-bio
 
-Personal portfolio and bio website for djD3o.
+Personal portfolio and bio website for Amadeo.
 
 Built to showcase:
 
 - Software engineering projects
-- Music production and DJ work
 - Technical skills
 - Professional experience
 - Social links and contact information
@@ -16,7 +15,7 @@ Built to showcase:
 
 This project is a modern personal website built with React, TypeScript, and Tailwind CSS.
 
-The goal of the site is to create a clean and responsive online presence that combines technology, music, and creative work into a single platform.
+The goal of the site is to create a clean and responsive online presence that combines technology and creative work into a single platform.
 
 ---
 
@@ -24,8 +23,9 @@ The goal of the site is to create a clean and responsive online presence that co
 
 - Responsive modern UI
 - Custom profile card
-- Social and music platform links
-- Smooth animations
+- Social links (GitHub, LinkedIn)
+- Matrix-style falling-character background, typewriter/decode name, boot sequence, CRT overlay and click effects
+- Hidden extras: type "neo" or the Konami code to switch themes; opt-in ambient sound
 - Mobile-friendly layout
 - Built with reusable React components
 - Fast development with Vite

@@ -1,52 +1,95 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const NOISE = Array.from("Amadeo01#$%&@");
+const TICK = 40; // ms between scramble updates
+const randomNoise = () => NOISE[Math.floor(Math.random() * NOISE.length)];
 
 type TypewriterProps = {
   text: string;
-  /** Milliseconds per character. */
+  /** Milliseconds each character takes to lock in. */
   speed?: number;
-  /** Milliseconds to wait before typing starts. */
+  /** Milliseconds to wait before decoding starts. */
   delay?: number;
+  /** Decoding waits until this is true. */
+  active?: boolean;
 };
 
+/**
+ * Types text out one character at a time. The characters about to appear
+ * flicker through random glyphs before locking in. Hovering replays the
+ * decode (with a glitch effect from CSS).
+ */
 export default function Typewriter({
   text,
-  speed = 130,
-  delay = 400,
+  speed = 140,
+  delay = 300,
+  active = true,
 }: TypewriterProps) {
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const [count, setCount] = useState(reduceMotion ? text.length : 0);
+  const chars = Array.from(text);
+  const total = chars.length;
+
+  const [reduceMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [state, setState] = useState({
+    locked: reduceMotion ? total : 0,
+    noise: "",
+  });
+  const timers = useRef<{ start?: number; tick?: number }>({});
+
+  const stop = useCallback(() => {
+    window.clearTimeout(timers.current.start);
+    window.clearInterval(timers.current.tick);
+  }, []);
+
+  const run = useCallback(
+    (perChar: number, startDelay: number) => {
+      stop();
+      timers.current.start = window.setTimeout(() => {
+        let progress = 0;
+        timers.current.tick = window.setInterval(() => {
+          progress += TICK / perChar;
+          const locked = Math.min(Math.floor(progress), total);
+          const noise =
+            locked >= total
+              ? ""
+              : Array.from(
+                  { length: Math.min(2, total - locked) },
+                  randomNoise,
+                ).join("");
+          setState({ locked, noise });
+          if (locked >= total) window.clearInterval(timers.current.tick);
+        }, TICK);
+      }, startDelay);
+    },
+    [stop, total],
+  );
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (!active || reduceMotion) return;
+    run(speed, delay);
+    return stop;
+  }, [active, reduceMotion, run, stop, speed, delay]);
 
-    let interval: number | undefined;
-    const start = window.setTimeout(() => {
-      let i = 0;
-      interval = window.setInterval(() => {
-        i += 1;
-        setCount(i);
-        if (i >= text.length) window.clearInterval(interval);
-      }, speed);
-    }, delay);
-
-    return () => {
-      window.clearTimeout(start);
-      window.clearInterval(interval);
-    };
-  }, [text, speed, delay, reduceMotion]);
-
-  // Spread so multi-byte characters like Ð and ø are never split.
-  const chars = Array.from(text);
+  const done = state.locked >= total;
+  const noiseLength = Array.from(state.noise).length;
 
   return (
-    <span aria-label={text}>
+    <span
+      aria-label={text}
+      className="glitch-hover inline-block cursor-default"
+      onMouseEnter={() => {
+        if (done && !reduceMotion) run(45, 0);
+      }}
+    >
       <span aria-hidden="true">
-        {chars.slice(0, count).join("")}
-        {/* Invisible remainder keeps the heading width stable while typing. */}
-        <span className="invisible">{chars.slice(count).join("")}</span>
-        <span className="typewriter-cursor" />
+        {chars.slice(0, state.locked).join("")}
+        {state.noise}
+        {/* Invisible remainder keeps the heading width stable while decoding. */}
+        <span className="invisible">
+          {chars.slice(state.locked + noiseLength).join("")}
+        </span>
+        {!done && <span className="typewriter-cursor" />}
       </span>
     </span>
   );
