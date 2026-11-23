@@ -24,7 +24,7 @@ The goal of the site is to create a clean and responsive online presence that co
 - Responsive modern UI
 - Custom profile card
 - Social links (GitHub, LinkedIn)
-- Matrix-style falling-character background, typewriter/decode name, boot sequence, CRT overlay and click effects
+- Matrix-style falling-character background, typewriter/decode name, CRT overlay and click effects
 - Hidden extras: type "neo" or the Konami code to switch themes; opt-in ambient sound
 - Mobile-friendly layout
 - Built with reusable React components

@@ -4,52 +4,37 @@ import { socialLinks } from "./data/socialLinks";
 import { useSecretCode } from "./hooks/useSecretCode";
 import Typewriter from "./components/Typewriter";
 import ParticleBackground from "./components/ParticleBackground";
-import BootSequence from "./components/BootSequence";
 import CrtOverlay from "./components/CrtOverlay";
 import TiltCard from "./components/TiltCard";
 import SoundToggle from "./components/SoundToggle";
 import profileImage from "./assets/f-3-bandcamp.jpg";
 
-const BOOT_KEY = "djd3o:booted";
-
-// "boot": terminal text -> "card": card fades in -> "ready": everything on.
-type Phase = "boot" | "card" | "ready";
+// "enter": card hidden -> "card": card fades in -> "ready": everything on.
+type Phase = "enter" | "card" | "ready";
 
 const THEMES = {
   green: { hex: "#00ff46", rgb: "0, 255, 70" },
   red: { hex: "#ff2a3d", rgb: "255, 42, 61" },
 };
 
-function shouldSkipBoot() {
-  try {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return true;
-    }
-    return sessionStorage.getItem(BOOT_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
+const NEXT_PHASE: Record<Exclude<Phase, "ready">, [Phase, number]> = {
+  enter: ["card", 50],
+  card: ["ready", 900],
+};
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>(() =>
-    shouldSkipBoot() ? "ready" : "boot",
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "ready"
+      : "enter",
   );
   const [redPill, setRedPill] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const onBootDone = useCallback(() => {
-    try {
-      sessionStorage.setItem(BOOT_KEY, "1");
-    } catch {
-      // storage unavailable (private mode); the boot just plays again next visit
-    }
-    setPhase("card");
-  }, []);
-
   useEffect(() => {
-    if (phase !== "card") return;
-    const timer = window.setTimeout(() => setPhase("ready"), 900);
+    if (phase === "ready") return;
+    const [next, wait] = NEXT_PHASE[phase];
+    const timer = window.setTimeout(() => setPhase(next), wait);
     return () => window.clearTimeout(timer);
   }, [phase]);
 
@@ -80,11 +65,10 @@ export default function App() {
       className="relative flex min-h-screen items-center justify-center bg-black px-6 text-white"
     >
       <ParticleBackground color={theme.rgb} boosted={ready} />
-      {phase === "boot" && <BootSequence onDone={onBootDone} />}
 
       <TiltCard
         className={`transition-all duration-700 ${
-          phase === "boot" ? "translate-y-3 opacity-0" : "opacity-100"
+          phase === "enter" ? "translate-y-3 opacity-0" : "opacity-100"
         }`}
       >
         <Card className="relative w-full rounded-3xl border-zinc-800 bg-zinc-950/40 shadow-2xl backdrop-blur-md">
@@ -95,7 +79,7 @@ export default function App() {
               className="h-40 w-40 rounded-full border-4 border-zinc-800 object-cover shadow-xl"
             />
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-white [font-family:'Inter']">
-              <Typewriter text="Amadeo" active={phase !== "boot"} />
+              <Typewriter text="Amadeo" active={phase !== "enter"} />
             </h1>
             <p className="mt-2 text-sm font-medium tracking-[0.2em] text-zinc-400 [font-family:'Inter']">
               @amad3o
